@@ -1,39 +1,45 @@
 import { useSelector, useDispatch } from "react-redux";
-import { selectAllPosts } from "./postStore";
-import PostAuthor from "./PostAuthor";
-import TimeAgo from "./TimeAgo";
-import ReactionButtons from "./ReactionButtons";
+import {
+  selectAllPosts,
+  getPostsStatus,
+  getPostsError,
+  fetchPosts,
+} from "./postSlice";
+
+import { useEffect } from "react";
+import PostsExcerpt from "./PostsExcerpt";
 
 const PostList = () => {
-  const posts = useSelector(selectAllPosts);
   const dispatch = useDispatch();
 
-  const orderedPosts = posts
-    .slice()
-    .sort((a, b) => b.date.localeCompare(a.date));
+  const posts = useSelector(selectAllPosts);
+  const postStatus = useSelector(getPostsStatus);
+  const error = useSelector(getPostsError);
 
-  const renderedPosts = orderedPosts.map((post) => (
-    <article
-      key={post.id}
-      className="border-2 grid gap-2 border-white rounded-md p-4"
-    >
-      <h3 className="text-xl capitalize font-bold">{post.title}</h3>
-      <p className="text-lg">{post.content.substring(0, 100)}</p>
+  useEffect(() => {
+    if (postStatus === "idle") {
+      dispatch(fetchPosts());
+    }
+  }, [postStatus, dispatch]);
 
-      <div className="flex flex-col md:flex-row  justify-self-end md:justify-self-auto md:justify-between mt-3  ">
-        <PostAuthor userId={post.user} />
-        <TimeAgo timestamp={post.date} />
-      </div>
-      <div>
-        <ReactionButtons post={post} />
-      </div>
-    </article>
-  ));
+  let content;
+
+  if (postStatus === "loading") {
+    content = <p>Loading ...</p>;
+  } else if (postStatus === "succeeded") {
+    const orderedPosts = posts
+      .slice()
+      .sort((a, b) => b.date.localeCompare(a.date));
+
+    content = orderedPosts.map((post) => (
+      <PostsExcerpt key={post.id} post={post} />
+    ));
+  } else if (postStatus === "failed") {
+    content = <p>{error}</p>;
+  }
+
   return (
-    <section className=" flex flex-col gap-4">
-      <h2 className="text-3xl font-bold">Posts</h2>
-      {renderedPosts}
-    </section>
+    <section className=" flex flex-col gap-4 mt-4 mx-4">{content}</section>
   );
 };
 

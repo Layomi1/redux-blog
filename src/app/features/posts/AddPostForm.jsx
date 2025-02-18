@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { postsAdded } from "./postStore";
+import { addNewPosts } from "./postSlice";
 import { selectAllUsers } from "../users/userSlice";
 
 const AddPostForm = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [userId, setUserId] = useState("");
+  const [addRequestStatus, setAddRequestStatus] = useState("idle");
 
   const dispatch = useDispatch();
   const users = useSelector(selectAllUsers);
@@ -16,17 +17,25 @@ const AddPostForm = () => {
   const onContentChanged = (e) => setContent(e.target.value);
   const onAuthorChanged = (e) => setUserId(e.target.value);
 
-  const onSavePostClicked = () => {
-    if (title && content) {
-      dispatch(postsAdded(title, content, userId));
+  const canSave =
+    [title, content, userId].every(Boolean) && addRequestStatus === "idle";
 
-      setTitle("");
-      setContent("");
-      setUserId("");
+  const onSavePostClicked = () => {
+    if (canSave) {
+      try {
+        setAddRequestStatus("pending");
+        dispatch(addNewPosts({ title, body: content, userId })).unwrap();
+
+        setTitle("");
+        setContent("");
+        setUserId("");
+      } catch (err) {
+        console.log("Failed to save the post", err);
+      } finally {
+        setAddRequestStatus("idle");
+      }
     }
   };
-
-  const canSave = Boolean(title) && Boolean(content) && Boolean(userId);
 
   const usersOptions = users.map((user, id) => (
     <option key={id} value={user.id}>
@@ -35,7 +44,7 @@ const AddPostForm = () => {
   ));
 
   return (
-    <section className="flex flex-col items-center mb-8">
+    <section className="flex flex-col items-center mb-8 mt-4">
       <h2 className="text-xl capitalize font-bold mb-5">Add a New Posts</h2>
       <form className="flex flex-col gap-2 w-full min-w-[350px]  ">
         <label htmlFor="postTitle">Title</label>
@@ -68,7 +77,7 @@ const AddPostForm = () => {
           rows={10}
           cols={10}
           onChange={onContentChanged}
-          placeholder="Enter Postt ..."
+          placeholder="Enter Post..."
           className="p-2  text-gray-600 rounded-sm"
         />
         <button
