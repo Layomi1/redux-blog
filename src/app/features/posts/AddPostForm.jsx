@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { addNewPosts } from "./postSlice";
 import { selectAllUsers } from "../users/userSlice";
+import { useNavigate } from "react-router-dom";
 
 const AddPostForm = () => {
   const [title, setTitle] = useState("");
@@ -12,6 +13,8 @@ const AddPostForm = () => {
 
   const dispatch = useDispatch();
   const users = useSelector(selectAllUsers);
+
+  const navigate = useNavigate();
 
   const onTitleChanged = (e) => setTitle(e.target.value);
   const onContentChanged = (e) => setContent(e.target.value);
@@ -29,6 +32,7 @@ const AddPostForm = () => {
         setTitle("");
         setContent("");
         setUserId("");
+        navigate("/");
       } catch (err) {
         console.log("Failed to save the post", err);
       } finally {
@@ -44,7 +48,7 @@ const AddPostForm = () => {
   ));
 
   return (
-    <section className="flex flex-col items-center mb-8 mt-4">
+    <section className="flex flex-col items-center mb-8 mt-4 px-5">
       <h2 className="text-xl capitalize font-bold mb-5">Add a New Posts</h2>
       <form className="flex flex-col gap-2 w-full min-w-[350px]  ">
         <label htmlFor="postTitle">Title</label>
@@ -54,7 +58,7 @@ const AddPostForm = () => {
           name="postTitle"
           value={title}
           onChange={onTitleChanged}
-          className="w-full p-2 text-gray-600 rounded-sm"
+          className="w-full p-2 text-gray-600 border-gray-300 border-2 rounded-sm"
           placeholder="Enter Post Title..."
         />
 
@@ -62,7 +66,7 @@ const AddPostForm = () => {
         <select
           id="postAuthor"
           value={userId}
-          className="w-full p-2 text-gray-600 rounded-sm"
+          className="w-full p-2 text-gray-600 rounded-sm border-gray-300 border-2"
           onChange={onAuthorChanged}
         >
           <option value=""></option>
@@ -78,16 +82,18 @@ const AddPostForm = () => {
           cols={10}
           onChange={onContentChanged}
           placeholder="Enter Post..."
-          className="p-2  text-gray-600 rounded-sm"
+          className="p-2  text-gray-600 rounded-sm border-gray-300 border-2"
         />
-        <button
-          type="button"
-          onClick={onSavePostClicked}
-          className="bg-white text-black focus:bg-black focus:text-white p-3 rounded-lg font-semibold cursor-pointer disabled:bg-slate-500"
-          disabled={!canSave}
-        >
-          Save Post
-        </button>
+        <article>
+          <button
+            type="button"
+            onClick={onSavePostClicked}
+            className="bg-white text-black focus:bg-black focus:text-white p-3 rounded-lg font-semibold cursor-pointer disabled:bg-slate-500"
+            disabled={!canSave}
+          >
+            Save Post
+          </button>
+        </article>
       </form>
     </section>
   );

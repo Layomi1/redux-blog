@@ -9,7 +9,7 @@ import Header from "./components/Header";
 
 function App() {
   return (
-    <section className="min-h-screen mb-4">
+    <section>
       <Header />
       <Routes>
         <Route index element={<PostList />} />
